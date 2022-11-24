@@ -20,14 +20,18 @@ do_cumulative_htrx(
   method = "simple",
   criteria = "BIC",
   gain = TRUE,
+  nmodel = 3,
   runparallel = FALSE,
   mc.cores = 6,
   rareremove = FALSE,
   rare_threshold = 0.001,
+  L = 6,
   dataseed = 1:sim_times,
-  tenfoldseed = 123,
-  returnall = FALSE,
+  fold = 10,
+  kfoldseed = 123,
+  htronly = FALSE,
   max_int = NULL,
+  returnwork = FALSE,
   verbose = FALSE
 )
 
@@ -42,12 +46,15 @@ do_cumulative_htrx_step1(
   fixorder = NULL,
   method = "simple",
   criteria = "BIC",
+  nmodel = 3,
   splitseed = 123,
   gain = TRUE,
   runparallel = FALSE,
   mc.cores = 6,
   rareremove = FALSE,
   rare_threshold = 0.001,
+  L = 6,
+  htronly = FALSE,
   max_int = NULL,
   verbose = FALSE
 )
@@ -70,110 +77,122 @@ make_cumulative_htrx(
   featurename,
   rareremove = FALSE,
   rare_threshold = 0.001,
+  htronly = FALSE,
   max_int = NULL
 )
 }
 \arguments{
-\item{data_nosnp}{a data frame with outcome (the outcome must be the first column)
-and fixed covariates (for example, sex, age and the first 18 PCs)
+\item{data_nosnp}{a data frame with outcome (the outcome must be the first column),
+fixed covariates (for example, sex, age and the first 18 PCs) if there are,
 and without SNPs or haplotypes.}
 
 \item{hap1}{a data frame of the SNPs' genotype of the first genome. The genotype of a SNP for each individual is either 0 (reference allele) or 1 (alternative allele).}
 
 \item{hap2}{a data frame of the SNPs' genotype of the second genome.
 The genotype of a SNP for each individual is either 0 (reference allele) or 1 (alternative allele).
-#' By default, hap2=hap1 representing haploid.}
+By default, \code{hap2=hap1} representing haploid.}
 
 \item{train_proportion}{a positive number between 0 and 1 giving
 the proportion of the training dataset when splitting data into 2 folds.
-By default, train_proportion=0.5.}
+By default, \code{train_proportion=0.5}.}
 
-\item{sim_times}{an integer giving the number of simulations in step 1 (see details).
-By default, sim_times=10.}
+\item{sim_times}{an integer giving the number of simulations in Step 1 (see details).
+By default, \code{sim_times=10}.}
 
 \item{featurecap}{a positive integer which manually sets the maximum number of independent features.
-By default, featurecap=40.}
+By default, \code{featurecap=40}.}
 
 \item{usebinary}{a non-negative number representing different models.
-Use linear model if usebinary=0,
-use logistic regression model via fastglm if usebinary=1 (by default),
-and use logistic regression model via glm if usebinary>1.}
+Use linear model if \code{usebinary=0},
+use logistic regression model via \code{fastglm} if \code{usebinary=1} (by default),
+and use logistic regression model via \code{glm} if \code{usebinary>1}.}
 
-\item{randomorder}{logical. If randomorder=TRUE (default),
+\item{randomorder}{logical. If \code{randomorder=TRUE} (default),
 use random order of all the SNPs to add SNPs in cumulative HTRX.}
 
 \item{fixorder}{a vector of the fixed order of SNPs to be added in cumulative HTRX.
-This only works by setting randomorder=FALSE. Otherwise, fixorder=NULL (default).
-The length of "fixorder" can be smaller than the total number of SNPs,
+This only works by setting \code{randomorder=FALSE}. Otherwise, \code{fixorder=NULL} (default).
+The length of \code{fixorder} can be smaller than the total number of SNPs,
 i.e. users can specify the order of some instead of all of the SNPs.}
 
-\item{method}{the method used for data splitting, either "simple" (default) or "stratified".}
+\item{method}{the method used for data splitting, either \code{"simple"} (default) or \code{"stratified"}.}
 
-\item{criteria}{the information criteria for model selection, either "BIC" (default) or "AIC".}
+\item{criteria}{the criteria for model selection, either \code{"BIC"} (default), \code{"AIC"} or \code{"lasso"}.}
 
-\item{gain}{logical. If gain=TRUE (default), report the variance explained in addition to fixed covariates;
+\item{gain}{logical. If \code{gain=TRUE} (default), report the variance explained in addition to fixed covariates;
 otherwise, report the total variance explained by all the variables.}
 
-\item{runparallel}{logical. Use parallel programming based on "mclapply" function or not.
-Note that for Windows users, "mclapply" doesn't work, so please set runparallel=FALSE (default).}
+\item{nmodel}{a positive integer specifying the number of candidate models
+that the criterion selects. By default, \code{nmodel=3}.}
+
+\item{runparallel}{logical. Use parallel programming based on \code{mclapply} function from R package \code{"parallel"} or not.
+Note that for Windows users, \code{mclapply} doesn't work, so please set \code{runparallel=FALSE} (default).}
 
 \item{mc.cores}{an integer giving the number of cores used for parallel programming.
-By default, mc.cores=6.
-This only works when runparallel=TRUE.}
+By default, \code{mc.cores=6}.
+This only works when \code{runparallel=TRUE}.}
 
-\item{rareremove}{logical. Remove rare SNPs and haplotypes or not. By default, rareremove=FALSE.}
+\item{rareremove}{logical. Remove rare SNPs and haplotypes or not. By default, \code{rareremove=FALSE}.}
 
 \item{rare_threshold}{a numeric number below which the haplotype or SNP is removed.
-This only works when rareremove=TRUE. By default, rare_threshold=0.001.}
+This only works when \code{rareremove=TRUE}. By default, \code{rare_threshold=0.001}.}
 
-\item{dataseed}{a vector of the seed that each simulation in step 1 (see details) uses.
-The length of dataseed must be the same as sim_times.
-By default, dataseed=1:sim_times.}
+\item{L}{a positive integer. The cumulative HTRX starts with haplotypes templates comtaining L SNPs.
+By default, \code{L=6}. Let nsnp be the number of SNPs in total, \code{L} must be smaller than nsnp-1.}
 
-\item{tenfoldseed}{a positive integer specifying the seed used to
-split data for 10-fold cross validation. By default, tenfoldseed=123.}
+\item{dataseed}{a vector of the seed that each simulation in Step 1 (see details) uses.
+The length of \code{dataseed} must be the same as \code{sim_times}.
+By default, \code{dataseed=1:sim_times}.}
 
-\item{returnall}{logical. If returnall=TRUE, return all the candidate models and
-the variance explained in each of 10 test set for these the candidate models.
-If returnall=FALSE (default), only return the best candidate model
-and the variance explained in each of 10 test set by this model.}
+\item{fold}{a positive integer specifying how many folds
+the data should be split into for cross-validation.}
+
+\item{kfoldseed}{a positive integer specifying the seed used to
+split data for k-fold cross validation. By default, \code{kfoldseed=123}.}
+
+\item{htronly}{logical. If \code{htronly=TRUE}, only haplotypes with interaction
+between all the SNPs will be selected. Please set \code{max_int=NULL} when \code{htronly=TRUE}.
+By default, \code{htronly=FALSE}.}
 
 \item{max_int}{a positive integer which specifies the maximum number of SNPs that can interact.
 If no value is given, interactions between all the SNPs will be considered.}
 
-\item{verbose}{logical. If verbose=TRUE, print out the inference steps. By default, verbose=FALSE.}
+\item{returnwork}{logical. If \code{returnwork=TRUE}, return a vector of the maximum number
+of features that are assessed in each simulation, excluding the fixed covariates.
+This is used to assess how much computational 'work' is done in Step 1(2) of HTRX (see details).
+By default, \code{returnwork=FALSE}.}
 
-\item{splitseed}{a positive integer giving the seed that a single simulation in step 1 (see details) uses.}
+\item{verbose}{logical. If \code{verbose=TRUE}, print out the inference steps. By default, \code{verbose=FALSE}.}
+
+\item{splitseed}{a positive integer giving the seed that a single simulation in Step 1 (see details) uses.}
 
 \item{featuredata}{a data frame of the feature data, e.g. haplotype data created by HTRX or SNPs.
-These features exclude all the data in data_nosnp, and will be selected using 2-step cross-validation.}
+These features exclude all the data in \code{data_nosnp}, and will be selected using 2-step cross-validation.}
 
 \item{train}{a vector of the indexes of the training data.}
 
 \item{featurename}{a character giving the names of features (haplotypes).}
 }
 \value{
-\code{\link{do_cumulative_htrx}} returns a list containing the best model selected,
+\code{do_cumulative_htrx} returns a list containing the best model selected,
  and the out-of-sample variance explained in each test set.
- If returnall=TRUE, this function also returns all the candidate models,
- and the out-of-sample variance explained in each test set by each candidate model.
 
-\code{\link{do_cv_step1}} returns a list of three candidate models selected by a single simulation.
+\code{do_cv_step1} returns a list of three candidate models selected by a single simulation.
 
-\code{\link{extend_haps}} returns a character of the names of the selected features.
+\code{extend_haps} returns a character of the names of the selected features.
 
-\code{\link{make_cumulative_htrx}} returns a data frame of the haplotype matrix.
+\code{make_cumulative_htrx} returns a data frame of the haplotype matrix.
 }
 \description{
-Two step cross-validation used to select the best HTRX model for longer haplotypes,
+Two-step cross-validation used to select the best HTRX model for longer haplotypes,
 i.e. include at least 7 single nucleotide polymorphisms (SNPs).
 }
 \details{
 Longer haplotypes are important for discovering interactions.
 However, there are \ifelse{html}{\out{3<sup>k</sup>}}{\eqn{3^k}}-1 haplotypes in HTRX
 if the region contains k SNPs,
-making HTRX (\code{\link{do_cv}}) unrealistic to apply on for regions with large numbers of SNPs.
-To address this issue, we proposed "cumulative HTRX" (\code{\link{do_cumulative_htrx}})
+making HTRX (\code{do_cv}) unrealistic to apply on for regions with large numbers of SNPs.
+To address this issue, we proposed "cumulative HTRX" (\code{do_cumulative_htrx})
 that enables HTRX to run on longer haplotypes,
  i.e. haplotypes which include at least 7 SNPs (we recommend).
  There are 2 steps to implement cumulative HTRX.
@@ -194,31 +213,44 @@ The top M haplotypes from them are then selected using forward regression.
 Repeat this process until obtaining M haplotypes which include k-1 SNPs;
 
 (3) Add the last SNP to create 3M+2 haplotypes.
-Afterwards, start from a model with fixed covariates (e.g. 18 PCs, sex and age),
-perform forward regression on the training set,
-and select s models with the lowest BIC to enter the candidate model pool;
+Afterwards, if \code{criteria="AIC"} or \code{criteria="BIC"},
+start from a model with fixed covariates (e.g. 18 PCs, sex and age),
+and perform forward regression on the subset,
+i.e. iteratively choose a feature (in addition to the fixed covariates)
+to add whose inclusion enables the model to explain the largest variance,
+and select s models with the lowest Akaike information criterion (AIC) or
+Bayesian Information Criteria (BIC)
+to enter the candidate model pool;
+If \code{criteria="lasso"}, using least absolute shrinkage and selection operator (lasso)
+to directly select the best s models to enter the candidate model pool;
 
 (4) repeat (1)-(3) B times, and select all the different models
 in the candidate model pool as the candidate models.
 
-Step 2: select the best model using 10-fold cross-validation.
+Step 2: select the best model using k-fold cross-validation.
 
-(1) Randomly split the whole data into 10 groups with approximately equal sizes,
+(1) Randomly split the whole data into k groups with approximately equal sizes,
 using stratified sampling when the outcome is binary;
 
-(2) In each of the 10 folds, use a different group as the test dataset,
-and take the remaining groups as the training dataset.
+(2) In each of the k folds, use a fold as the validation dataset, a fold as the test dataset,
+and the remaining folds as the training dataset.
 Then, fit all the candidate models on the training dataset,
 and use these fitted models to compute the additional variance explained by features
-(out-of-sample R2) in the test dataset.
+(out-of-sample variance explained) in the validation and test dataset.
 Finally, select the candidate model with the biggest
-average out-of-sample R2 as the best model.
+average out-of-sample variance explained in the validation set as the best model,
+and report the out-of-sample variance explained in the test set.
 
-Function \code{\link{do_cumulative_htrx_step1}} is the Step 1 (1)-(3) described above.
-Function \code{\link{extend_haps}} is used to select haplotypes in the Step 1 (2) described above.
-Function \code{\link{make_cumulative_htrx}} is used to generate the haplotype data
+Function \code{do_cumulative_htrx_step1} is the Step 1 (1)-(3) described above.
+Function \code{extend_haps} is used to select haplotypes in the Step 1 (2) described above.
+Function \code{make_cumulative_htrx} is used to generate the haplotype data
 (by adding a new SNP into the haplotypes) from M haplotypes to 3M+2 haplotypes,
 which is also described in the Step 1 (2)-(3).
+
+When investigating haplotypes with interactions between at most 2 SNPs, L is suggested
+to be no bigger than 10. When investigating haplotypes with interactions between at most 3 SNPs,
+L should not be bigger than 9. If haplotypes with interactions between more than 4 SNPs
+are investigated, L is suggested to be 6 (which is the default value).
 }
 \examples{
 ## use dataset "example_hap1", "example_hap2" and "example_data_nosnp"
@@ -252,9 +284,15 @@ cumu_htrx_results <- do_cumulative_htrx(HTRX::example_data_nosnp[1:500,1:3],
 #This result would be more precise when setting larger sim_times and featurecap
 }
 \references{
-Barrie W, Yang Y, Attfield K E, et al. Genetic risk for Multiple Sclerosis originated in Pastoralist Steppe populations. bioRxiv (2022).
+Barrie, William, et al. "Genetic risk for Multiple Sclerosis originated in Pastoralist Steppe populations." bioRxiv (2022).
 
-Efron, B. Bootstrap Methods: Another Look at the Jackknife. Ann. Stat. 7, 1-26 (1979).
+Eforn, B. "Bootstrap methods: another look at the jackknife." The Annals of Statistics 7 (1979): 1-26.
 
-Kass, R. E. & Wasserman, L. A Reference Bayesian Test for Nested Hypotheses and its Relationship to the Schwarz Criterion. J. Am. Stat. Assoc. 90, 928-934 (1995).
+Schwarz, Gideon. "Estimating the dimension of a model." The annals of statistics (1978): 461-464.
+
+McFadden, Daniel. "Conditional logit analysis of qualitative choice behavior." (1973).
+
+Akaike, Hirotugu. "A new look at the statistical model identification." IEEE transactions on automatic control 19.6 (1974): 716-723.
+
+Tibshirani, Robert. "Regression shrinkage and selection via the lasso." Journal of the Royal Statistical Society: Series B (Methodological) 58.1 (1996): 267-288.
 }
