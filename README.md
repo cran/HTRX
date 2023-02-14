@@ -1,4 +1,3 @@
-
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
 # Haplotype Trend Regression with eXtra flexibility (HTRX)
@@ -6,10 +5,14 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-This is the location for the HTRX tool that was used in [Barrie W, Yang
+This is the location for the HTRX tool that was firstly proposed by   
+[Barrie W, Yang
 Y, Attfield K E, et al. Genetic risk for Multiple Sclerosis originated
 in Pastoralist Steppe populations. bioRxiv
-(2022)](https://www.biorxiv.org/content/10.1101/2022.09.23.509097v1).
+(2022): 2022.09.23.509097](https://www.biorxiv.org/content/10.1101/2022.09.23.509097v1)   
+and then illustrated in detail by   
+[Yang Y, Lawson DJ. HTRX: an R package for learning non-contiguous haplotypes associated with a phenotype. bioRxiv
+(2022): 2022-11.29.518395](https://www.biorxiv.org/content/10.1101/2022.11.29.518395v1).
 
 -   Authors:  
     Yaoling Yang (<yaoling.yang@bristol.ac.uk>)  
@@ -19,17 +22,18 @@ in Pastoralist Steppe populations. bioRxiv
 
 ## Introduction:
 
-Haplotype Trend Regression with eXtra flexibility (HTRX) searches for
-haplotype patterns that include single nucleotide polymorphisms (SNPs)
+Haplotype Trend Regression with eXtra flexibility (HTRX) searches a pre-defined 
+set of SNPs for haplotype patterns that include single nucleotide polymorphisms (SNPs)
 and non-contiguous haplotypes.
 
-HTRX is a template gives a value for each SNP taking values of ‘0’ or
+We search over all possible templates which give a value for each SNP being ‘0’ or
 ‘1’, reflecting whether the reference allele of each SNP is present or
 absent, or an ‘X’ meaning either value is allowed.
 
-We used a two-step procedure to select the best HTRX model (function
-“do_cv”). Step 1: select candidate models; Step 2: select the best model
-using 10-fold cross-validation.
+We used a two-stage procedure to select the best HTRX model (function
+“do_cv”).   
+Stage 1: select candidate models;    
+Stage 2: select the best model using 10-fold cross-validation.
 
 Longer haplotypes are important for discovering interactions. However,
 there are $3^k-1$ haplotypes in HTRX if the region contains $k$ SNPs,
@@ -51,6 +55,8 @@ This package is also available from CRAN. You can install it by
 ``` r
 install.packages("HTRX")
 ```
+## Tutorial
+A tutorial of package HTRX can be found in vignettes/HTRX_vignette.pdf
 
 ## Examples
 
