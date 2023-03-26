@@ -18,6 +18,7 @@ do_cv(
   criteria = "BIC",
   gain = TRUE,
   nmodel = 3,
+  dataseed = 1:sim_times,
   runparallel = FALSE,
   mc.cores = 6,
   fold = 10,
@@ -99,6 +100,10 @@ otherwise, report the total variance explained by all the variables.}
 
 \item{nmodel}{a positive integer specifying the number of candidate models
 that the criterion selects. By default, \code{nmodel=3}.}
+
+\item{dataseed}{a vector of the seed that each simulation in Step 1 (see details) uses.
+The length of \code{dataseed} must be the same as \code{sim_times}.
+By default, \code{dataseed=1:sim_times}.}
 
 \item{runparallel}{logical. Use parallel programming based on \code{mclapply} function from R package \code{"parallel"} or not.
 Note that for Windows users, \code{mclapply} doesn't work, so please set \code{runparallel=FALSE} (default).}
@@ -222,16 +227,16 @@ HTRX_matrix=make_htrx(HTRX::example_hap1[1:300,1:4],
 ## then perform HTRX using 2-step cross-validation in a single small example
 ## to compute additional variance explained by haplotypes
 ## If you want to compute total variance explained, please set gain=FALSE
-htrx_results <- do_cv(HTRX::example_data_nosnp[1:300,1:2],
-                      HTRX_matrix,train_proportion=0.5,
-                      sim_times=1,featurecap=4,usebinary=1,
-                      method="simple",criteria="BIC",
-                      gain=TRUE,runparallel=FALSE,verbose=TRUE)
+CV_results <- do_cv(HTRX::example_data_nosnp[1:300,1:2],
+                    HTRX_matrix,train_proportion=0.5,
+                    sim_times=1,featurecap=4,usebinary=1,
+                    method="simple",criteria="BIC",
+                    gain=TRUE,runparallel=FALSE,verbose=TRUE)
 
 #This result would be more precise when setting larger sim_times and featurecap
 }
 \references{
-Yang Y, Lawson DJ. HTRX: an R package for learning non-contiguous haplotypes associated with a phenotype. bioRxiv (2022): 2022-11.29.518395.
+Yang Y, Lawson DJ. HTRX: an R package for learning non-contiguous haplotypes associated with a phenotype. Bioinformatics Advances 1.1 (2023): vbab038.
 
 Barrie, William, et al. "Genetic risk for Multiple Sclerosis originated in Pastoralist Steppe populations." bioRxiv (2022): 2022.09.23.509097.
 

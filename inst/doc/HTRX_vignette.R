@@ -48,39 +48,39 @@ cat(ncol(HTRX_matrix_rmrare),
 
 ## ----warning=FALSE------------------------------------------------------------
 ## selecting the best haplotype model using "AIC" from all the haplotypes
-htrx_results_nocovar <- do_cv(data_nosnp=example_data_nosnp[1:2000,1,drop=FALSE],
-                              featuredata=HTRX_matrix_rmrare,
-                              sim_times=2,featurecap=4,usebinary=1,
-                              method="simple",criteria="BIC",gain=FALSE)
+CV_results_nocovar <- do_cv(data_nosnp=example_data_nosnp[1:2000,1,drop=FALSE],
+                            featuredata=HTRX_matrix_rmrare,
+                            sim_times=2,featurecap=4,usebinary=1,
+                            method="simple",criteria="BIC",gain=FALSE)
 
-cat('The selected features', as.character(htrx_results_nocovar[[2]]),
-    'explains \n',mean(htrx_results_nocovar[[1]])*100,
+cat('The selected features', as.character(CV_results_nocovar[[2]]),
+    'explains \n',mean(CV_results_nocovar[[1]])*100,
     '% average out-of-sample variance')
 
 ## ----warning=FALSE------------------------------------------------------------
 ## selecting the best haplotype model using "BIC" from all the haplotypes
 ## here we include the sex and age as fixed covariates
-htrx_results_withcovar <- do_cv(data_nosnp=example_data_nosnp[1:2000,1:3],
-                                featuredata=HTRX_matrix_rmrare,
-                                sim_times=2,featurecap=8,usebinary=1,
-                                method="stratified",criteria="AIC",gain=TRUE)
+CV_results_withcovar <- do_cv(data_nosnp=example_data_nosnp[1:2000,1:3],
+                              featuredata=HTRX_matrix_rmrare,
+                              sim_times=2,featurecap=8,usebinary=1,
+                              method="stratified",criteria="AIC",gain=TRUE)
 
-cat('The selected features', as.character(htrx_results_withcovar[[2]]),
-    'explains \n', mean(htrx_results_withcovar[[1]])*100,
+cat('The selected features', as.character(CV_results_withcovar[[2]]),
+    'explains \n', mean(CV_results_withcovar[[1]])*100,
     '% extra average out-of-sample variance')
 
 ## ----warning=FALSE------------------------------------------------------------
 ## selecting the best haplotype model using "BIC"
 ## we include all the 8 SNPs, but specify at most 4 SNPs can interact
 ## we also include the sex and age as fixed covariates
-cumu_htrx_results <- do_cumulative_htrx(data_nosnp=example_data_nosnp[1:2000,1:3],
-                                        hap1=example_hap1[1:2000,],
-                                        hap2=example_hap2[1:2000,],
-                                        sim_times=1,featurecap=8,usebinary=1,
-                                        method="stratified",criteria="AIC",
-                                        gain=TRUE,max_int=4)
+cumu_CV_results <- do_cumulative_htrx(data_nosnp=example_data_nosnp[1:2000,1:3],
+                                      hap1=example_hap1[1:2000,],
+                                      hap2=example_hap2[1:2000,],
+                                      sim_times=1,featurecap=8,usebinary=1,
+                                      method="stratified",criteria="AIC",
+                                      gain=TRUE,max_int=4)
 
-cat('The selected features', as.character(cumu_htrx_results[[2]]),
-    'explains \n',mean(cumu_htrx_results[[1]])*100,
+cat('The selected features', as.character(cumu_CV_results[[2]]),
+    'explains \n',mean(cumu_CV_results[[1]])*100,
     '% average out-of-sample variance')
 
